@@ -5,8 +5,9 @@ setup(
     version='0.0.1',
     description='Python3 version of py7slib',
     author='Cedric Viou',
-    packages=find_packages(exclude=['tests*']),
-    package_dir={'': 'src'},
+    packages=find_packages(
+        include=['py7slib_py3', 'py7slib_py3.*'],
+        exclude=['tests*']),
     python_requires='>=3.6',
     install_requires=[
         'serial',
