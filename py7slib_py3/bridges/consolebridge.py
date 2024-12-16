@@ -250,10 +250,10 @@ class ConsoleBridge():
         try :
             devices = EthBone.scan(subnet)
         #except BadData as e:
-            #print "Fallo en es escaneo etherbone"
+            #print("Fallo en es escaneo etherbone")
             #raise e
         except :
-            print "Etherbone scan error"
+            print("Etherbone scan error")
 
         return devices
 
