@@ -30,7 +30,7 @@ import argparse as arg
 import sys
 import socket
 
-from core.vuart import VUART_shell
+from . core.vuart import VUART_shell
 
 
 def main():
@@ -49,7 +49,7 @@ def main():
     try:
         socket.inet_aton(args.IP)
     except socket.error as ip_error:
-        print("Illegal IP address passed (%s)\n" % args.IP)
+        print(f"Illegal IP address passed ({args.IP})\n")
         exit(1)
 
     try:
@@ -62,11 +62,11 @@ def main():
             shell.run()
     #TODO: use exceptions from vuart (not defined yet)
     except Exception as e:
-        print e
+        print(e)
         sys.stdout.write ("\033[1;31mError\033[0m: Failed connection with the WR-LEN (%s)\n" % (args.IP))
-        print ("See the manual for more deatils")
+        print("See the manual for more deatils")
     except Error as e:
-        print e
+        print(e)
 
 
 if __name__ == '__main__':

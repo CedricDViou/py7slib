@@ -629,7 +629,7 @@ def main():
         # noport given on command line -> ask user now
         if port is None:
             dump_port_list()
-            port = raw_input('Enter port name:')
+            port = input('Enter port name:')
 
     convert_outgoing = CONVERT_CRLF
     if options.cr:

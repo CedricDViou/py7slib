@@ -38,7 +38,7 @@ from ctypes import *
 import ctypes
 
 # User defined modules
-from core.gendrvr import BusWarning, BusCritical, BusException
+from .. core.gendrvr import BusWarning, BusCritical, BusException
 
 # Define specific for SDB Flags
 SDB_MAGIC                   = 0x5344422d
@@ -80,8 +80,8 @@ class StructStr(BigEndianStructure):
                 if type(var)==long or type(var)==int:
                     try:
                         fmt="0x%%0%dx\n" %(ctypes.sizeof(field_type)*2)
-                    except Exception, e:
-                        print e
+                    except Exception as e:
+                        print(e)
                         fmt="0x%x\n"
                     msg+=fmt %(var)
                 else:
@@ -312,12 +312,12 @@ class SDBNode():
 
         ## Read the interconnect info (Where the SDB is stored)
         self.readrecord(self.base,self.interconnect)
-        #print self.interconnect
+        #print(self.interconnect)
         for i in range(1,self.interconnect.sdb_records):
-            #print ">>>>>>>>>>>>>>>>>> Device %s%d" %(self.buspath_prefix,i)
+            #print(">>>>>>>>>>>>>>>>>> Device %s%d" %(self.buspath_prefix,i))
             el=sdb_record()
             self.readrecord(self.base + sizeof(el)*i, el)
-            #print el
+            #print(el)
             n=None ##At the moment no node is appended
             if el.is_type(sdb_record.TYPE_BRIDGE) and (maxlevel>0 or maxlevel==-1):
                 bridge=el.getTypedRecord()
@@ -355,10 +355,13 @@ class SDBNode():
             try:
                 offset=mask+i*mask
                 datar=self.bus.read(offset)
-                if self.debug: print "@0x%08x > 0x%08x" %(offset,datar)
-                if datar==SDB_MAGIC: return offset
-            except BusWarning,e:
-                if self.debug: print e
+                if self.debug:
+                    print(f"@0x{offset:08x} > 0x{datar:08x}")
+                if datar==SDB_MAGIC:
+                    return offset
+            except BusWarning as e:
+                if self.debug:
+                    print(e)
                 ##TODO: when bus error are well handle we can skip out of place
         return self.scan(mask >> 4)
 
@@ -383,10 +386,11 @@ class SDBNode():
             if self.elements[i][0].is_component():
                 e=self.elements[i][0].getTypedRecord()
                 prod=e.sdb_component.product
-                if self.debug: print "%x:%x => %x:%x" %( vendor_id, device_id, prod.vendor_id, prod.device_id)
-                if long(prod.vendor_id)==vendor_id and int(prod.device_id)==device_id:
-                    buspath="%s%d" %(self.buspath_prefix,i+1)
-                    if self.debug: print "Found Device %s %s: %x\n%s" %(buspath,prod.name,self.offset+e.sdb_component.addr_first,e)
+                if self.debug: print(f"{vendor_id:x}:{device_id:x} => {prod.vendor_id:x}:{prod.device_id:x}")
+                if int(prod.vendor_id)==vendor_id and int(prod.device_id)==device_id:
+                    buspath=f"{self.buspath_prefix}{i+1}"
+                    if self.debug:
+                        print(f"Found Device {buspath} {prod.name}: {self.offset+e.sdb_component.addr_first:x}\n{e}") 
                     prods.append((e,self.offset+e.sdb_component.addr_first,buspath))
             if self.elements[i][1]!=None:
                 self.elements[i][1].findProduct(vendor_id,device_id,prods)
@@ -401,9 +405,9 @@ class SDBNode():
         """
         if verbose==True:
             self.ls_full()
-            print ""
+            print("")
         else:
-            print "%-14s %16s %-8s  %16s  %s" %("BusPath","VendorID","ProdID","BaseAddr (Hex)", "Description")
+            print(f"{'BusPath':-14s} {'VendorID':16s} {'ProdID':-8s}  {'BaseAddr (Hex)':16s}  {'Description'}") 
             self.ls_brief()
 
     def ls_full(self):
@@ -412,12 +416,12 @@ class SDBNode():
         prefix=fmt %("")
 
         if self.level>0: self._print_indent("|\n+++|",nspaces-3)
-        print "%s+=== Interconnect %s0 (@0x%08x)" % (prefix, self.buspath_prefix,self.base)
-        print "%s|" %(prefix)
+        print("%s+=== Interconnect %s0 (@0x%08x)" % (prefix, self.buspath_prefix,self.base))
+        print("%s|" %(prefix))
         self._print_indent(self.interconnect,nspaces, "|   ")
         for i in range(0,len(self.elements)):
-            print "%s|" %(prefix)
-            print "%s+--- Device %s%d" %(prefix,self.buspath_prefix,i+1)
+            print("%s|" %(prefix))
+            print("%s+--- Device %s%d" %(prefix,self.buspath_prefix,i+1))
             self._print_indent(self.elements[i][0],nspaces, "|   ")
             if self.elements[i][1]!=None:
                 self.elements[i][1].ls_full()
@@ -434,7 +438,7 @@ class SDBNode():
     @staticmethod
     def ls_oneline(e,offset,buspath=""):
         prod=e.sdb_component.product
-        print "%-14s %016x:%08x  %16x  %s" %(buspath,prod.vendor_id,prod.device_id,offset,prod.name)
+        print("%-14s %016x:%08x  %16x  %s" %(buspath,prod.vendor_id,prod.device_id,offset,prod.name))
 
 
     def readrecord(self,address,record):
@@ -480,4 +484,4 @@ class SDBNode():
             sep: The separator between space and text
         """
         s = "%s" % (obj)
-        print "\n".join((nspace * " ") + sep + i for i in s.splitlines())
+        print("\n".join((nspace * " ") + sep + i for i in s.splitlines()))

@@ -31,11 +31,11 @@ import time
 from subprocess import check_output
 
 # User defined imports
-from consolebridge import ConsoleBridge
-from ethbone import EthBone
-from core.p7sException import p7sException
-from bridges.sdb import SDBNode
-from core.gendrvr import BusCritical, BusWarning
+from . consolebridge import ConsoleBridge
+from . ethbone import EthBone
+from .. core.p7sException import *
+from . sdb import SDBNode
+from .. core.gendrvr import BusCritical, BusWarning
 
 
 class VUART_bridge(ConsoleBridge):
@@ -195,7 +195,7 @@ class VUART_bridge(ConsoleBridge):
                 #raise Error()  # virtual uart is not ready
                 return 'Error: virtual UART is not ready' # virtual uart is not ready
 
-        bytes = bytearray(cmd)
+        bytes = bytearray(cmd.encode('utf-8'))
         bytes.append(13) # insert \r
         try:
             for b in bytes:
@@ -212,8 +212,8 @@ class VUART_bridge(ConsoleBridge):
                     cnt -= 1
 
             # The output from VUART contains the sent command twice, remove it
-            if 'wrc#' in bytes:
-                r_bytes = bytes.index('\n')+1
+            if b'wrc#' in bytes:
+                r_bytes = bytes.index(b'\n')+1
                 return bytes[r_bytes:-6]  # Remove the final "\r\nwrc#"
             else :
                 return bytes

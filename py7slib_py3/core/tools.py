@@ -56,7 +56,7 @@ class KeyInput:
             return False
     
     def get_yesno(self,question, ermsg=""):
-        inp = raw_input(question+" ["+self.mode+"]:")
+        inp = input(question+" ["+self.mode+"]:")
         while True:
             if inp.find("yes") != -1 or inp.find("y") != -1:
                 return True
@@ -65,11 +65,11 @@ class KeyInput:
                 self.log_err(ermsg)
                 return False
     
-            inp = raw_input('Enter "yes" or "no" to continue:')
+            inp = input('Enter "yes" or "no" to continue:')
             
     def get_yesnotimout(self,question,tout=10,ermsg=""):
-        inp = raw_input(question+" ["+self.mode+"]  (timeout="+tout+" s):")
-        print inp
+        inp = input(question+" ["+self.mode+"]  (timeout="+tout+" s):")
+        print(inp)
         i, o, e = select.select( [sys.stdin], [], [], tout )
         if not i:
             self.log_err("Warning: timeout %s", question)
@@ -83,7 +83,7 @@ class KeyInput:
             i, o, e = select.select( [sys.stdin], [], [], 0)
             if i:
                 c= sys.stdin.read(1)
-                print "%s %x" %(c,c)
+                print("{c} {c:x}")
                 if c==char: return True
         finally: 
             termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
@@ -92,10 +92,10 @@ class KeyInput:
     
     def bit_indep(self,question,_func,check):
         #While loop to check each bit independently
-        print "not define"
+        print("not define")
             
     def msg_cont(self,msg):
-        raw_input(msg + ": Press any key to continue...")
+        input(msg + ": Press any key to continue...")
         
         
 class BitManip:

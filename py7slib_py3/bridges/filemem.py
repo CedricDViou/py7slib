@@ -97,7 +97,7 @@ class FileMem(GenDrvr):
         '''
         address = offset
         ret=self.find(address)
-        print "R: @0x%08X: 0x%08x (%d)" % (address, ret['val'],ret['pos'])
+        print(f"R: @0x{address:08X}: 0x{ret['val']:08x} ({ret['pos']})")
         return ret['val']
 
 
@@ -116,5 +116,5 @@ class FileMem(GenDrvr):
         ret=self.find(address)
         if ret["pos"]>=0:
             self.fid.seek(ret["pos"])
-        print "W: %s" % (wstr)
+        print(f"W: {wstr}")
         self.fid.write(wstr+"\n")

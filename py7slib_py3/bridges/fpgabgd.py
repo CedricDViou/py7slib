@@ -56,7 +56,8 @@ class FPGABGD(GenDrvr):
         self.baseaddr=baseaddr
         self.sizeaddr=0x200000 #0 is used for default size addr
 
-        if self.show_dbg: print self.info()+"\n"
+        if self.show_dbg:
+            print(self.info()+"\n")
         self.open(0)
 
     def open(self, LUN):
@@ -84,7 +85,8 @@ class FPGABGD(GenDrvr):
         data = c_uint(0xBADC0FFE)
         pData = cast(addressof(data), INTP)
         ret=self.lib.FPGABGD_wishbone_RW(self.hdev,c_uint(address),pData,0)
-        if self.show_dbg: print "R@x%08X > 0x%08x" %(address, pData[0])
+        if self.show_dbg:
+            print(f"R@x{address:08X} > 0x{pData[0]:08x}")
         if ret !=0:
             raise NameError('Bad Wishbone Read')
         return pData[0]
@@ -103,7 +105,8 @@ class FPGABGD(GenDrvr):
         INTP = POINTER(c_uint)
         data = c_uint(datum)
         pData = cast(addressof(data), INTP)
-        if self.show_dbg: print "W@x%08X < 0x%08x" %( address, pData[0])
+        if self.show_dbg:
+            print(f"W@x{address:08X} < 0x{pData[0]:08x}")
         ret=self.lib.FPGABGD_wishbone_RW(self.hdev,c_uint(address),pData,1)
         if ret !=0:
             raise NameError('Bad Wishbone Write @0x%08x > 0x%08x (ret=%d)' %(address,datum, ret))

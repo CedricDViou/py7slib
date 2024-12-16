@@ -8,6 +8,10 @@ setup(
     packages=find_packages(
         include=['py7slib_py3', 'py7slib_py3.*'],
         exclude=['tests*']),
+    include_package_data=True,
+    package_data={
+        'py7slib_py3.data': ['*.so.*', 'eb-discover_*'],
+    },
     python_requires='>=3.6',
     install_requires=[
         'serial',

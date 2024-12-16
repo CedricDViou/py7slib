@@ -47,8 +47,8 @@ def main():
         #else: ##options.bus_type == "UART"
            # bus = wb_UART()
             #bus.open(options.lun)
-    except BusException, e:
-        print "Fatal: %s" % (e)
+    except BusException as e:
+        print(f"Fatal: {e}")
 
 
     flash=SpiFlash(bus, None, args.debug)
