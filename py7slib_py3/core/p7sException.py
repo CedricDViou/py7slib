@@ -27,7 +27,7 @@ Custom exceptions
 #------------------------------------------------------------------------------|
 
 
-import ewberrno as errno
+from . import ewberrno as errno
 
 
 class p7sException(Exception) :

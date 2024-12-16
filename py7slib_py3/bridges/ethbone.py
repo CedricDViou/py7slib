@@ -81,8 +81,8 @@ import binascii
 from subprocess import check_output
 
 # Import common modules
-from py7slib.core.gendrvr import *
-from py7slib.core.p7sException import p7sException
+from .. core.gendrvr import *
+from .. core.p7sException import *
 
 EB_PROTOCOL_VERSION = 1
 EB_ABI_VERSION      = 0x04
@@ -94,7 +94,7 @@ PYDIR=os.path.dirname(os.path.abspath(__file__))
 
 def py_cb_func(user, dev, op, status):
      if status: raise NameError('Callback Error: %s' % (status))
-     print "%x" %(status)
+     print(f"{status:x}")
 
 # Import Etherbone structures
 class eb_handler(Structure):
@@ -135,9 +135,22 @@ class EthBone(GenDrvr):
             show_dbg : enables debug info
         '''
 
-        if verbose: print "LD_LIBRARY_PATH=%s" % (os.getenv('LD_LIBRARY_PATH'))
+        if verbose:
+            print(f"LD_LIBRARY_PATH={os.getenv('LD_LIBRARY_PATH')}")
+        
+        libetherbone = f"{PYDIR}/../lib/libetherbone.so"
+        if not os.path.exists(libetherbone): # if lib is not here
+            if os.path.exists(libetherbone + ".1.0_x86_64"):  # but arch libs are present, attemp to create links
+                print("\033[1mConfiguring py7slib libs...\033[0m")
+                
+                import platform
+                arch = platform.machine()
+                
+                os.symlink(libetherbone + ".1.0_" + arch, libetherbone + ".1")
+                os.symlink(libetherbone + ".1", libetherbone)
+                os.symlink(f"{PYDIR}/../bin/eb-discover_" + arch, f"{PYDIR}/../bin/eb-discover")  
 
-        self.load_lib("%s/../lib/libetherbone.so" % PYDIR)
+        self.load_lib(libetherbone)
 
         ##Create empty ptr on structure used by ethbone
         self.socket    = c_uint(0)
@@ -146,9 +159,10 @@ class EthBone(GenDrvr):
         self.wcrc      = 0
 
         ##Setup arguments
-        self.LUN=LUN
+        self.LUN=LUN.encode("utf-8")
         self.verbose=verbose
-        if self.verbose: print self.info()+"--\n"
+        if self.verbose:
+            print(self.info()+"--\n")
 
         ##Setup variables
         self.addr_width=self.EB_ADDRX
@@ -159,7 +173,7 @@ class EthBone(GenDrvr):
 
 
         ##Open the device
-        if LUN!="": self.open(LUN)
+        if self.LUN!="": self.open(self.LUN)
 
     def __del__(self):
         self.close()
@@ -168,11 +182,13 @@ class EthBone(GenDrvr):
         '''Open the device and map to the FPGA bus
         '''
         status=self.lib.eb_socket_open(EB_ABI_CODE, 0, self.addr_width|self.data_width, self.getPtrData(self.socket))
-        if status: raise BusCritical('failed to open Etherbone socket: %s\n' % (self.eb_status(status)));
+        if status:
+            raise BusCritical('failed to open Etherbone socket: %s\n' % (self.eb_status(status)))
 
-        if self.verbose: print "Connecting to '%s' with %d retry attempts...\n" % (LUN, self.attempts);
+        if self.verbose:
+            print(f"Connecting to '{LUN}' with {self.attempts} retry attempts...\n")
         status=self.lib.eb_device_open(self.socket, LUN, self.EB_ADDRX|self.EB_DATAX, self.attempts, self.getPtrData(self.device))
-        if status: raise BusCritical("failed to open Etherbone device: %s\n" % (self.eb_status(status)));
+        if status: raise BusCritical(f"failed to open Etherbone device: %{self.eb_status(status)}\n")
 
     def close(self):
         '''Close the device and unmap
@@ -180,11 +196,13 @@ class EthBone(GenDrvr):
         if (self.device.value & 0xFFFF)==0xFFFF: return 0
 
         status=self.lib.eb_device_close(self.device)
-        if status: raise BusCritical("Close device: %s\n" % (self.eb_status(status)));
+        if status:
+            raise BusCritical(f"Close device: {self.eb_status(status)}\n")
         self.device=c_uint(0)
 
         status=self.lib.eb_socket_close(self.socket)
-        if status: raise BusCritical("Close socket: %s\n" % (self.eb_status(status)));
+        if status:
+            raise BusCritical(f"Close device: {self.eb_status(status)}\n")
         self.socket=c_uint(0)
 
     def enable_silent_close(self,enable=True):
@@ -216,8 +234,10 @@ class EthBone(GenDrvr):
 
 
         status=self.lib.eb_device_read(self.device,c_uint(address),self.format,pData,user_data,cb)
-        if self.verbose: print "R@x%08X > 0x%08x" %(address, pData[0])
-        if status: raise BusWarning('Bad Etherbone Read: %s' % (self.eb_status(status)))
+        if self.verbose:
+            print(f"R@x{address:08X} > 0x{pData[0]:08x}")
+        if status:
+            raise BusWarning(f'Bad Etherbone Read: {self.eb_status(status)}')
         return pData[0]
 
 
@@ -239,9 +259,11 @@ class EthBone(GenDrvr):
         user_data=c_uint32(0)
         cb=c_uint(0)
 
-        if self.verbose: print "W@x%08X < 0x%08x" %( address, datum)
+        if self.verbose:
+            print(f"W@x{address:08X} < 0x{datum:08x}")
         status=self.lib.eb_device_write(self.device,c_uint(address),self.format,data,user_data,cb)
-        if status: raise BusWarning('Bad Wishbone Write @0x%08x > 0x%08x : %s' % (address, datum, self.eb_status(status)))
+        if status:
+            raise BusWarning(f'Bad Wishbone Write @0x{address:08x} > 0x{datum:08x} : {self.eb_status(status)}')
         return data
 
 
@@ -277,14 +299,16 @@ class EthBone(GenDrvr):
         addr=offset
         i=0
         status= self.lib.eb_cycle_open(self.device,0,0,self.getPtrData(cycle))
-        if status: raise BusWarning('Cycle open : 0x%x, %s' % (offset,self.eb_status(status)))
+        if status:
+            raise BusWarning(f'Cycle open : 0x{offset:x}, {self.eb_status(status)}')
         while i<bsize:
             pData = cast(addressof(dataVec)+i, UINT32P)
             self.lib.eb_cycle_read(cycle,addr,self.format,pData)
             addr=addr+incr
             i=i+4
         status=self.lib.eb_cycle_close(cycle)
-        if status: raise BusWarning('Cycle close: %s' % (self.eb_status(status)))
+        if status:
+            raise BusWarning(f'Cycle close: {self.eb_status(status)}')
 
         ###Convert the c_uint32 array to list of c_uint32
         ldata=[]
@@ -294,7 +318,7 @@ class EthBone(GenDrvr):
         if self.verbose:
             addr=offset
             for d in dataVec:
-                print "@x%08X > %8x" % (addr, d)
+                print(f"@x{addr:08X} > {d:08x}")
                 addr=addr+incr
 
         return ldata
@@ -321,7 +345,8 @@ class EthBone(GenDrvr):
         if status: raise BusWarning('Cycle open : 0x%x, %s' % (offset,self.eb_status(status)))
         for data in ldata:
             ##Chequear endianess de format
-            if self.verbose: print "@x%08X > %8x" % (addr, data)
+            if self.verbose:
+                print(f"@x{addr:08X} > {data:08x}")
             self.lib.eb_cycle_write(cycle,addr,self.format,c_uint32(data))
             self.wcrc=binascii.crc32(c_uint32(data), self.wcrc)
             addr=addr+incr
@@ -329,10 +354,11 @@ class EthBone(GenDrvr):
             status=self.lib.eb_cycle_close_silently(cycle) #Close without asking acknowledgment of the device (faster)
         else:
             status=self.lib.eb_cycle_close(cycle)
-        if status: raise BusWarning('Cycle close: %s' % (self.eb_status(status)))
+        if status:
+            raise BusWarning(f'Cycle close: {self.eb_status(status)}')
 
 
-        return 0;
+        return 0
 
 
 
@@ -380,24 +406,26 @@ class EthBone(GenDrvr):
 
         ##Check the CafeBabe ID
         id=(bus.read(EP_offset | REG_ID))
-        print "0x%X" % id
-        if id != 0xcafebabe: raise BaseException("Error reading ID")
-        else: print "OK"
+        print(f"0x{id:%X}")
+        if id != 0xcafebabe:
+            raise BaseException("Error reading ID")
+        else:
+            print("OK")
 
         ## Toogle the lowest 16bit of MAC address.
         macaddr=EP_offset | REG_MACL
         oldmac=(bus.read(macaddr))
         newmac= (oldmac & 0xFFFF0000) | (~oldmac & 0xFFFF)
-        print "old=0x%X > new=0x%X" % (oldmac,newmac)
+        print(f"old=0x{oldmac:X} > new=0x{newmac:X}")
         bus.write(macaddr,newmac)
         rbmac= bus.read(macaddr)
-        print "0x%X" % rbmac
+        print(f"0x{rbmac:X}")
         if newmac!=rbmac:  raise BaseException("Error writing new MAC")
-        else: print "OK"
+        else: print("OK")
         bus.write(macaddr,oldmac)
         rbmac=(bus.read(macaddr))
         if oldmac!=rbmac: raise BaseException("Error writing old MAC")
-        else: print "OK"
+        else: print("OK")
 
     def test_rwblock(self,RAM_offset=0x0, nwords=128):
         '''
@@ -410,7 +438,7 @@ class EthBone(GenDrvr):
             Exception: when there is an error during test.
         '''
 
-        print "test R/W block"
+        print("test R/W block")
         dataw=[]
         for i in range (0,nwords):
             dataw.append(i<<24 | i << 16 | i << 8 | i)
@@ -435,7 +463,7 @@ class EthBone(GenDrvr):
 
         if datar != dataw:
             for i in range(0,len(dataw)):
-                print "%3d x%08x " % (i,dataw[i])
+                print(f"{i:3d} x{dataw[i]:08x} ")
             raise BaseException("Error reading data block")
 
 
@@ -547,7 +575,7 @@ class EthBone(GenDrvr):
             def checkDevices(ip,devices) :
                 for i in range(1,255) :
                     ip[-1] = str(i)
-                    #print "probando ip: %s" % ('.'.join(ip))
+                    #print(f"probando ip: {'.'.join(ip)}")
                     if isLastByte(ip) :
                         cmd = "%s/../bin/eb-discover" % PYDIR
                         args = "udp/%s" % (ip if type(ip) == type("") else '.'.join(ip))

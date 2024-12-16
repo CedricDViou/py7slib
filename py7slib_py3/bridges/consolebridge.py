@@ -33,7 +33,7 @@ import time
 from subprocess import check_output
 
 # User defined imports
-from py7slib.core.p7sException import p7sException
+from core.p7sException import p7sException
 from ethbone import EthBone
 
 

@@ -298,7 +298,7 @@ class Forwarder(ZeroconfService):
 def test():
     service = ZeroconfService(name="TestService", port=3000)
     service.publish()
-    raw_input("Press any key to unpublish the service ")
+    input("Press any key to unpublish the service ")
     service.unpublish()
 
 

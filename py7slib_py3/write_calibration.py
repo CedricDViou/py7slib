@@ -68,7 +68,7 @@ def main():
     parser = SafeConfigParser()
     ret = parser.read(args.input)
     if ret == []:
-        print("%s could not be opened" % (args.input))
+        print(f"{args.input} could not be opened")
 
     # Write the delays for the SFP ports
     if "ports" in parser.sections():

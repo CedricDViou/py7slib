@@ -153,7 +153,7 @@ class SerialBridge(ConsoleBridge):
         clear the data in the read buffer of the Virtual UART
         '''
         if self.bus is None:
-            print "Error in flushInput function"
+            print("Error in flushInput function")
             #raise algo
         else:
             if self.verbose:
@@ -172,7 +172,7 @@ class SerialBridge(ConsoleBridge):
             Outputs a list of str from WR-LEN.
         '''
         out = self.bus.cmd_w(cmd, buffered)
-        #print out
+        #print(out)
         return out
 
 

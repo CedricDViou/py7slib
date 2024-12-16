@@ -1,0 +1,6 @@
+include py7slib_py3/bin/eb-discover_armv7l
+include py7slib_py3/bin/eb-discover_i686
+include py7slib_py3/bin/eb-discover_x86_64
+include py7slib_py3/lib/libetherbone.so.1.0_i686
+include py7slib_py3/lib/libetherbone.so.1.0_x86_64
+include py7slib_py3/lib/libetherbone.so.1.3.2_armv7l

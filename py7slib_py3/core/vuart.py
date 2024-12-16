@@ -32,10 +32,10 @@ import time
 import select
 import datetime as dt
 # User defined modules
-from py7slib.bridges.VUART_bridge import VUART_bridge
-from gendrvr import BusCritical, BusWarning
-from p7sException import p7sException, Retry, Error
-from ewberrno import Ewberrno
+from .. bridges.VUART_bridge import VUART_bridge
+from . gendrvr import BusCritical, BusWarning
+from . p7sException import *
+from . ewberrno import Ewberrno
 
 class VUART_shell():
     '''
@@ -120,8 +120,8 @@ class VUART_shell():
         self.ver_date = None
         self.gui_enabled = False
         self.refresh = 5  # Refresh time for interactive commands (1 sec)
-        ver = self.vuart.sendCommand("ver")
-        self.__get_firm_date__(ver.decode('utf8', errors='ignore'))
+        ver = self.vuart.sendCommand("ver").decode('utf8', errors='ignore')
+        self.__get_firm_date__(ver)
 
         # Compile regular expresions
         self.mode_regex = re.compile(self.MODE_REGEX)
@@ -160,7 +160,7 @@ class VUART_shell():
 
         while True:
             try:
-                ret = self.vuart.sendCommand(cmd)
+                ret = self.vuart.sendCommand(cmd).decode('utf8', errors='ignore')
                 return ret
             except BusWarning as e:
                 if attempts >= retry:
@@ -204,8 +204,7 @@ class VUART_shell():
             time (str) : Raw data from time command
         '''
         sync_info_valid = 2
-        raw = stat.decode('utf8')
-        time =  time.decode('utf8')
+        raw = stat
         board_mode = self.mode_regex.search(raw).group(0)
 
         if board_mode is None:
@@ -313,7 +312,7 @@ class VUART_shell():
 
         while(True):
             sys.stdout.write("\033[1mwrc# \033[0m")
-            cmd = str(raw_input())
+            cmd = str(input())
             if cmd == "_exit" :
                 print("Bye!")
                 exit(0)
@@ -331,7 +330,7 @@ class VUART_shell():
                     fin.close()
                     if len(params) > 2: fout.close()
                 except Exception as e:
-                    print e
+                    print(e)
 
             elif "_refresh" in cmd  :
                 param = cmd.split(" ")
@@ -352,8 +351,10 @@ class VUART_shell():
                     sys.stdout.write("\033[1;31mError:\033[0mConnection with the WR-LEN is lost\n")
                     print ("See the manual for more deatils")
                     exit(1)
-                if ret == "" : continue
-                else: print ret
+                if ret == "" :
+                    continue
+                else:
+                    print(ret)
 
     def run_script(self, script, saveto=None):
         '''
@@ -413,8 +414,8 @@ class VUART_shell():
             if cmd == "gui":
                 while True:
                     try:
-                        raw_stat = self.vuart.sendCommand("stat")
-                        raw_time = self.vuart.sendCommand("time")
+                        raw_stat = self.vuart.sendCommand("stat").decode('utf8', errors='ignore')
+                        raw_time = self.vuart.sendCommand("time").decode('utf8', errors='ignore')
                     except Error as e:
                         sys.stdout.write("\033[1;31mError:\033[0mConnection with the WR-LEN is lost\n")
                         print ("See the manual for more deatils")
@@ -427,7 +428,7 @@ class VUART_shell():
                 sys.stdout.write("\033[1mRefresh rate : %.2f secs\033[0m\n\n" % self.refresh)
                 while True:
                     try:
-                        ret = self.vuart.sendCommand(cmd)
+                        ret = self.vuart.sendCommand(cmd).decode('utf8', errors='ignore')
                     except Error as e:
                         sys.stdout.write("\033[1;31mError:\033[0mConnection with the WR-LEN is lost\n")
                         print ("See the manual for more deatils")
@@ -456,7 +457,7 @@ class VUART_shell():
         Method to print some info about the device and connection established
         '''
         try:
-            ver = self.vuart.sendCommand("ver")
+            ver = self.vuart.sendCommand("ver").decode('utf8', errors='ignore')
         except Error as e:
             sys.stdout.write("\033[1;31mError:\033[0mConnection with the WR-LEN is lost\n")
             print ("See the manual for more deatils")
