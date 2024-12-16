@@ -33,8 +33,8 @@ import time
 from subprocess import check_output
 
 # User defined imports
-from core.p7sException import p7sException
-from ethbone import EthBone
+from .. core.p7sException import p7sException
+from . ethbone import EthBone
 
 
 class ConsoleBridge():

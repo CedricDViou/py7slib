@@ -80,8 +80,8 @@ class StructStr(BigEndianStructure):
                 if type(var)==long or type(var)==int:
                     try:
                         fmt="0x%%0%dx\n" %(ctypes.sizeof(field_type)*2)
-                    except Exception, e:
-                        print e
+                    except Exception as e:
+                        print(e)
                         fmt="0x%x\n"
                     msg+=fmt %(var)
                 else:
@@ -359,8 +359,9 @@ class SDBNode():
                     print("@0x%08x > 0x%08x" %(offset,datar))
                 if datar==SDB_MAGIC:
                     return offset
-            except BusWarning,e:
-                if self.debug: print e
+            except BusWarning as e:
+                if self.debug:
+                    print(e)
                 ##TODO: when bus error are well handle we can skip out of place
         return self.scan(mask >> 4)
 
