@@ -13,3 +13,12 @@ This project was ported to python3 and tested only for :
 - etherbone lib interface for arch x86_64
 
 More tests are probably required for full compatibility with original python 2 implementation...
+
+Installation
+============
+
+```
+git clone <repos-URL> <local-dir>
+cd <local-dir>
+pip install .
+```
